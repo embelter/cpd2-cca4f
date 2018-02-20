@@ -1,30 +1,39 @@
-<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <meta name="google-signin-client_id" content="192816903778-o384b480fg6p30frljf3k8lanji4e7p5.apps.googleusercontent.com">
-	<meta name="google-signin-cookiepolicy" content="single_host_origin">
-	<meta name="google-signin-scope" content="profile email">
-    <title>GARBAGE</title>
+    <title>CS595 CPD</title>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="192816903778-o384b480fg6p30frljf3k8lanji4e7p5.apps.googleusercontent.com">
+    <meta name="google-signin-cookiepolicy" content="single_host_origin">
+    <meta name="google-signin-scope" content="profile email">
+
+    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <script>
+          function onSignIn(googleUser) {
+            console.log('User signed in');
+            var profile = googleUser.getBasicProfile();
+            console.log('ID: ' + profile.getId());
+            console.log('Name: ' + profile.getName());
+            console.log('Email: ' + profile.getEmail());
+            console.log('Image URL: ' + profile.getImageUrl());
+      }
+
+     </script>
+
+     <script>
+       function signOut() {
+         var auth2 = gapi.auth2.getAuthInstance();
+         auth2.signOut().then(function () {
+           console.log('User signed out.');
+         });
+       }
+     </script>
   </head>
   <body>
-	<h1>MORE GARBAGE</h1>
-	<div class="g-signin2" data-onsuccess="onSignIn"></div>
-        <script type="text/javascript">
-                function onSignIn(googleUser){
-                        window.location.href = "localhost:8080/test";
-                        console.log("Name: "+googleUser.getBasicProfile().getName());
-                }
-                function signOut(){   
-                        var auth2 = gapi.auth2.getAuthInstance();
-                        auth2.signOut().then(function(){
-                                console.log("SIGN OUT");
-                        });
-                }
-        </script>
+    <script src="index.js"></script>
 
-	<a href="#" onclick="signOut();">Sign out</a>
+
+    <a href="#" onclick="signOut();">Sign out</a>
+
   </body>
 </html>
