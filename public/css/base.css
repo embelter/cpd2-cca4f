@@ -1,0 +1,20 @@
+#thanks {
+	padding-top: 10vh;
+	padding-bottom: 10vh;
+    text-align: center;
+    background: #e0e0e0;
+}
+section {
+	padding-top: 4vh;
+	padding-bottom: 4vh;
+}
+.g-signin2{
+	width: 100%;
+  }
+  
+  .g-signin2 > div{
+	margin: 0 auto;
+	}
+.jumbotron {
+	text-align: center;
+}

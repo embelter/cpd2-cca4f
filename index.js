@@ -15,12 +15,7 @@ var config = {
   messagingSenderId: "192816903778"
 };
 firebase.initializeApp(config);
-// Switched to express(app) in order to more easily access static files 
-app.get('/', function (req, res) {
-	// Should resolve the static css dir
-	app.use(express.static(path.join(__dirname + '/css')));
-	res.sendFile(path.join(__dirname + "/index.html"));
-	});
+app.use(express.static("public"));
 
 app.listen(8080, function()	{
 	console.log("App rendered at localhost:8080");
