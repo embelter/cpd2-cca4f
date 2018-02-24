@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>CS595 CPD</title>
+    <link rel="stylesheet" href="/css/base.css">
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-database.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script> window.uid = "<%= uid %>";</script>
+  </head>
+  <body id="page-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="mainNav">
+      <div class="container">
+        <a class="navbar-brand js-scroll-trigger" href="#page-top">Fake Bank</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Welcome <span id="nameSpan"></span>!
+                    </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" onclick="signOut()">Sign Out</a>
+                </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+      <div class="jumbotron">
+        <h1>Welcome to Fake Bank</h1>
+        <p>Serving all your fake banking needs</p>
+      </div>
+
+    <section id="send">
+      <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <h1>Balance: $<span id="balanceSpan"></span></h1>
+            </div>
+          <div class="col-8 mx-auto">
+            <h2>Send Money</h2>
+            <form class="form-inline">
+              <div class="form-group mb-2">
+                <label for="amount" class="sr-only">Amount</label>
+                <input type="number" id="numberField" class="form-control" id="amount" placeholder="Amount to send">
+              </div>
+              <div class="form-group mx-sm-3 mb-2">
+                <label for="recipient" class="sr-only">Recipient Email</label>
+                <input type="email" id="emailField" class="form-control" id="recipient" placeholder="Recipient Email">
+              </div>
+              <button type="button" class="btn btn-primary mb-2" onclick="sendMoney();">Send Money</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="thanks">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-8 mx-auto">
+            <h2>About Us</h2>
+            <p class="lead">We're a totally legit bank. Everything on this page even updates in real time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5 bg-dark">
+      <div class="container">
+        <p class="m-0 text-center text-white">Copyright &copy; Fake Bank 2018</p>
+      </div>
+      <!-- /.container -->
+    </footer>
+
+
+    <!-- KEEP JAVASCRIPT AFTER EVERYTHING TO ENSURE PAGE LOAD -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="js/config.js"></script>
+    <script src="js/member.js"></script>
+  </body>
+
+</html>
