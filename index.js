@@ -1,6 +1,7 @@
 var firebase = require("firebase");
 var http = require('http');
 var path = require('path');
+var bcrypt = require("bcrypt");
 
 var express = require('express');
 var app = express();

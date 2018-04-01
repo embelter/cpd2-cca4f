@@ -76,3 +76,17 @@ function exchangeMoney(isDep){
         });
     }
 }
+function depositMoney()	{
+	var depositValue = parseInt($("#depositAmount").val());
+
+    //initalize the reference to our balance
+    var balanceRef = fdb.ref('Users/' + userId);
+    
+    balanceRef.once("value")
+    .then(function(snapshot) {
+    // must load the individual value wrapped inside of the ref
+    alert(depositValue + "$ Deposited");
+    fdb.ref('Users/' + userId).set(snapshot.val()+ depositValue);
+    });
+
+}
