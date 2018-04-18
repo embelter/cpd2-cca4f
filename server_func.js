@@ -45,17 +45,23 @@ fdb.ref('Requests').on('child_added', function(reqSnapshot){
 						switch(transactData.type){
 							case 1:  // Deposit
 //								console.log("\t\t\t\t\tTransaction is deposit");
-								fromSnapshot.ref.child('balance').set(fromSnapshot.child('balance').val() + transactData.amount);
-								var timestamp = Date.now();
-								fdb.ref('Logs').push({
-									"amount": transactData.amount,
-									'timestamp': timestamp,
-									"to": reqData.from
-								});
-								fromSnapshot.ref.child('notices').push({
-									"status": true,
-									"timestamp": timestamp,
-									"type": 1
+								fromSnapshot.ref.child('balance').transaction(function(balance){
+									balance = balance == null ? fromSnapshot.child('balance').val() : balance;
+									return balance + transactData.amount;
+								}, function(err, success){
+									var timestamp = Date.now();
+									if(success){
+										fdb.ref('Logs').push({
+											"amount": transactData.amount,
+											'timestamp': timestamp,
+											"to": reqData.from
+										});
+									}
+									fromSnapshot.ref.child('notices').push({
+										"status": success,
+										"timestamp": timestamp,
+										"type": 1
+									});
 								});
 								break;
 							case 2:  // Send
@@ -67,19 +73,40 @@ fdb.ref('Requests').on('child_added', function(reqSnapshot){
 										fdb.ref(toEntry).once('value', function(toSnapshot){
 											if(toSnapshot.val() != null){
 //												console.log("\t\t\t\t\t\t\tTransfer completed");
-												fromSnapshot.ref.child('balance').set(fromSnapshot.child('balance').val() - transactData.amount);
-												toSnapshot.ref.child('balance').set(toSnapshot.child('balance').val() + transactData.amount);
-												var timestamp = Date.now();
-												fdb.ref('Logs').push({
-													"amount": transactData.amount,
-													"from": reqData.from,
-													"timestamp": timestamp,
-													"to": transactData.to
-												});
-												fromSnapshot.ref.child('notices').push({
-													"status": true,
-													"timestamp": timestamp,
-													"type": 2
+												fromSnapshot.ref.child('balance').transaction(function(balance){
+													balance = balance == null ? fromSnapshot.child('balance').val() : balance;
+													if(balance >= transactData.amount){
+														return balance - transactData.amount;
+													}
+												}, function(err, success){
+													if(success){
+														toSnapshot.ref.child('balance').transaction(function(balance){
+															balance = balance == null ? toSnapshot.child('balance').val() : balance;
+															return balance + transactData.amount;
+														}, function(err, success){
+															var timestamp = Date.now();
+															if(success){
+																fdb.ref('Logs').push({
+																	"amount": transactData.amount,
+																	"from": reqData.from,
+																	"timestamp": timestamp,
+																	"to": transactData.to
+																});
+															}
+															fromSnapshot.ref.child('notices').push({
+																"status": success,
+																"timestamp": timestamp,
+																"type": 2
+															});
+														});
+													}
+													else{
+														fromSnapshot.ref.child('notices').push({
+															"status": false,
+															"timestamp": Date.now(),
+															"type": 2
+														});
+													}
 												});
 											}
 											else{
