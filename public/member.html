@@ -65,15 +65,8 @@
               </div>
               <button type="button" class="btn btn-primary mb-2" onclick="sendMoney();">Send Money</button>
             </form>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-   <section id="send">
-      <div class="container">
-        <div class="row">
-          <div class="col-8 mx-auto">
+
+            <br/>
             <h2>Deposit Money</h2>
             <form class="form-inline">
               <div class="form-group mb-2">
@@ -82,7 +75,24 @@
               </div>
               <button type="button" class="btn btn-primary mb-2" onclick="depositMoney();">Deposit</button>
             </form>
+
+            <br/>
+            <h2>Your transactions</h2>
+            <br/>
+            <div id="transactContainer">
+            <table class="table" id="transactTable">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">To</th>
+                    <th scope="col">From</th>
+                    <th scope="col">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
           </div>
+        </div>
         </div>
       </div>
     </section>

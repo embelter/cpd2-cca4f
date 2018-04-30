@@ -34,3 +34,4 @@ function retrieveLogs() {
         //e.stack
     });
 }
+$("#transactTable tbody").append("<tr><td>New</td><td>New</td><td>New</td></tr>");
