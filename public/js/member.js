@@ -2,7 +2,28 @@
 var fdb = firebase.database();
 
 function cleanEmail(str){
-	return str.replace("@","%40").replace(".","%2E");
+	return str.replace("@", "%40").replace(".", "%2E");
+}
+function reverseEmail(str){
+	return str.replace("%40", "@").replace("%2E", ".");
+}
+
+var logTable = $("#transactTable tbody");
+function addLog(data){
+	var entry = "<tr><td>";
+	if(data.to){
+		entry += reverseEmail(data.to);
+	}
+	entry += "</td><td>";
+	if(data.from){
+		entry += reverseEmail(data.from);
+	}
+	entry += "</td><td>";
+	if(data.amount){
+		entry += "$"+data.amount;
+	}
+	entry += "</td></tr>";
+	logTable.prepend(entry);
 }
 
 firebase.auth().onAuthStateChanged(function(user) {
@@ -11,48 +32,71 @@ firebase.auth().onAuthStateChanged(function(user) {
     var userId = cleanEmail(user.email);
     window.userId = userId;
 
-    //initalize the reference to our balance
-    var balanceRef = fdb.ref('Users/' + userId + '/balance');
-
-    //if a user has no value, then set it to 0
-    balanceRef.once('value').then(function(snapshot) {
-        if(snapshot.val() == null) {
-			fdb.ref('Requests').push({
-				"data": "",
-				"from": userId
+    //notify the server about login
+	var curToken = Date.now();
+	fdb.ref('Requests').push({
+		"data": curToken,
+		"from": userId
+	});
+    //automatically update the balance on the page if it changes.
+	var userRef = fdb.ref('Users/'+userId);
+	userRef.child('balance').on('value', function(snapshot){
+		window.balance = snapshot.val();
+		$("#balanceSpan").text(snapshot.val());
+	});
+	userRef.child('token').on('value', function(snapshot){
+		var token = snapshot.val();
+		if(token == curToken){
+			curToken = -1;
+			snapshot.ref.off();
+			userRef.child('firstLog').once('value', function(snapshot){
+				snapshot.ref.remove();
+				var logs = snapshot.val();
+				if(logs){
+					logs.forEach(function(e){
+						addLog(e);
+					});
+				}
+				snapshot.ref.remove();
+				userRef.child('updateLog').remove().then(function(){
+					userRef.child('updateLog').on('value', function(snapshot){
+						if(snapshot){
+							snapshot.ref.remove();
+							var log = snapshot.val();
+							if(log){
+								addLog(log);
+							}
+						}
+					});
+				});
 			});
-        }
-    }).then(function(){
-        //automatically update the balance on the page if it changes.
-        balanceRef.on('value', function(snapshot) {
-            window.balance = snapshot.val();
-            $("#balanceSpan").text(snapshot.val());
-        });
-		fdb.ref('Users/'+userId+'/notices').on('child_added', function(snapshot){
-			var data = snapshot.val();
-			var note = "NOTICE!\n"+(new Date(data.timestamp)).toString()+"\n";
-			switch(data.type){
-				case 1:
-					if(data.status){
-						note += "The deposit has been processed!";
-					}
-					else{
-						note += "The deposit could not be completed!";
-					}
-					break;
-				case 2:
-					if(data.status){
-						note += "The transfer has been processed!";
-					}
-					else{
-						note += "The transfer could not be completed!"
-					}
-					break;
-			}
-			snapshot.ref.remove();
-			alert(note);
-		});
-    });
+		}
+	});
+	userRef.child('notices').on('child_added', function(snapshot){
+		var data = snapshot.val();
+		var note = "NOTICE!\n"+(new Date(data.timestamp)).toString()+"\n";
+		switch(data.type){
+			case 1:
+				if(data.status){
+					note += "The deposit has been processed!";
+				}
+				else{
+					note += "The deposit could not be completed!";
+				}
+				break;
+			case 2:
+				if(data.status){
+					note += "The transfer has been processed!";
+				}
+				else{
+					note += "The transfer could not be completed!"
+				}
+				break;
+		}
+		snapshot.ref.remove();
+		alert(note);
+	});
+	
 });
 
 function signOut() {
@@ -63,6 +107,7 @@ function signOut() {
         window.location = "/";
     });
 }
+
 
 function sendMoney() {
     var toEmail = cleanEmail($("#emailField").val());
@@ -82,12 +127,11 @@ function sendMoney() {
     }
 }
 
-
 function depositMoney()	{
 	var depositValue = parseInt($("#depositAmount").val());
 
 	$("#depositAmount").val("");
-	if(depositValue > 0){
+	if(depositValue > 0 && depositValue < 100000){
 		fdb.ref('Requests').push({
 			"data": JSON.stringify({
 				"amount": depositValue,

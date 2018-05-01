@@ -12,67 +12,73 @@ var fdb = admin.database();
 
 // Admin function
 fdb.ref('Requests').on('child_added', function(reqSnapshot){
-//	console.log("Entered request...");
 	var reqData = reqSnapshot.val();
 	var fromEntry = 'Users/'+reqData.from;
-	if(reqData.data.length == 0){
-//		console.log("\tData for new account...");
+	var dataType = typeof reqData.data;
+	if(dataType == 'number'){
 		fdb.ref(fromEntry).once('value', function(snapshot){
-//			console.log("\t\tRetrieved account reference...");
 			if(snapshot.val() == null){
-//				console.log("\t\t\tSetting new account");
-				snapshot.ref.set({
-					"balance": 0,
-					"notices" : {},
-					// "publicKey": "PUBLIC_KEY",
-					// "privateKey": "PRIVATE_KEY"
-				})
+				snapshot.ref.set({"balance": 0})
 			}
-//			console.log("\t\tNew account verified");
+			fdb.ref('Logs').orderByChild('timestamp').startAt(Date.now() - 3600000).once('value', function(logs){
+				var sendData = [];
+				if(logs){
+					logs.forEach(function(e){
+						e = e.val();
+						if(e && (e.to === reqData.from || e.from === reqData.from)){
+							sendData.push({
+								"amount": e.amount || null,
+								"from": e.from || null,
+								"to": e.to || null
+							});
+						}
+					});
+				}
+				snapshot.ref.child('firstLog').set(sendData);
+				snapshot.ref.child('token').set(reqData.data);
+			});
 		});
 	}
-	else{
-//		console.log("\tData for transaction...");
+	else if(dataType == 'string'){
 		fdb.ref(fromEntry).once('value', function(fromSnapshot){
-//			console.log("\t\tRetrieved from account reference...");
 			var transactData = reqData.data;// bcrypt.decrypt(reqData.data, fromSnapshot.child('privateKey'));
 			if(transactData){  // Check if bcrypt decrypted successfully
-//				console.log("\t\t\tSuccessfully has transaction data...");
 				try{
 					transactData = JSON.parse(transactData);
 					if(transactData.type && typeof transactData.type == 'number' && transactData.amount && typeof transactData.amount == 'number' && transactData.amount > 0){
-//						console.log("\t\t\t\tTransaction data is valid...");
 						switch(transactData.type){
 							case 1:  // Deposit
-//								console.log("\t\t\t\t\tTransaction is deposit");
-								fromSnapshot.ref.child('balance').transaction(function(balance){
-									balance = balance == null ? fromSnapshot.child('balance').val() : balance;
-									return balance + transactData.amount;
-								}, function(err, success){
-									var timestamp = Date.now();
-									if(success){
-										fdb.ref('Logs').push({
-											"amount": transactData.amount,
-											'timestamp': timestamp,
-											"to": reqData.from
+								if(transactData.amount < 100000){
+									fromSnapshot.ref.child('balance').transaction(function(balance){
+										balance = balance == null ? fromSnapshot.child('balance').val() : balance;
+										return balance + transactData.amount;
+									}, function(err, success){
+										var timestamp = Date.now();
+										if(success){
+											fdb.ref('Logs').push({
+												"amount": transactData.amount,
+												'timestamp': timestamp,
+												"to": reqData.from
+											});
+											fromSnapshot.ref.child('updateLog').set({
+												"amount": transactData.amount,
+												"to": reqData.from
+											});
+										}
+										fromSnapshot.ref.child('notices').push({
+											"status": success,
+											"timestamp": timestamp,
+											"type": 1
 										});
-									}
-									fromSnapshot.ref.child('notices').push({
-										"status": success,
-										"timestamp": timestamp,
-										"type": 1
 									});
-								});
+								}
 								break;
 							case 2:  // Send
-//								console.log("\t\t\t\t\tTransaction is transfer...");
 								if(fromSnapshot.child('balance').val() >= transactData.amount && transactData.to && typeof transactData.to == 'string'){
-//									console.log("\t\t\t\t\t\tTransfer is valid...");
 									var toEntry = 'Users/'+transactData.to;
 									if(fromEntry != toEntry){
 										fdb.ref(toEntry).once('value', function(toSnapshot){
 											if(toSnapshot.val() != null){
-//												console.log("\t\t\t\t\t\t\tTransfer completed");
 												fromSnapshot.ref.child('balance').transaction(function(balance){
 													balance = balance == null ? fromSnapshot.child('balance').val() : balance;
 													if(balance >= transactData.amount){
@@ -92,6 +98,13 @@ fdb.ref('Requests').on('child_added', function(reqSnapshot){
 																	"timestamp": timestamp,
 																	"to": transactData.to
 																});
+																var updateLog = {
+																	"amount": transactData.amount,
+																	"from": reqData.from,
+																	"to": transactData.to
+																};
+																fromSnapshot.ref.child('updateLog').set(updateLog);
+																toSnapshot.ref.child('updateLog').set(updateLog);
 															}
 															fromSnapshot.ref.child('notices').push({
 																"status": success,
@@ -121,12 +134,10 @@ fdb.ref('Requests').on('child_added', function(reqSnapshot){
 								}
 								break;
 						}
-//						console.log("\t\t\t\tTransaction completed");
 					}
 				}catch(e){}
 			}
 		});
 	}
 	reqSnapshot.ref.remove();
-//	console.log("Request end");
 });
