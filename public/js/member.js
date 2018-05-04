@@ -2,10 +2,10 @@
 var fdb = firebase.database();
 
 function cleanEmail(str){
-	return str.replace("@", "%40").replace(".", "%2E");
+	return str.replace(/\./g, "%2E").replace(/#/g, "%23").replace(/\$/g, "%24").replace(/\[/g, "%5B").replace(/]/g, "%5D");
 }
 function reverseEmail(str){
-	return str.replace("%40", "@").replace("%2E", ".");
+	return str.replace(/%2E/g, ".").replace(/%23/g, "#").replace(/%24/g, "$").replace(/%5B/g, "[").replace(/%5D/g, "]");
 }
 
 var logTable = $("#transactTable tbody");
